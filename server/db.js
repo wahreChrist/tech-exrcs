@@ -1,6 +1,6 @@
-const spicedPg = require("spiced-pg");
+const pg = require("./pg-promisified");
 
-const db = spicedPg(
+const db = pg(
     process.env.DATABASE_URL ||
         "postgres:postgres:postgres@localhost:5432/testexe"
 );
@@ -51,5 +51,14 @@ module.exports.addRepo = (
         RETURNING *
     `,
         [refId, owner, projName, url, stars, forks, issues, timestamp]
+    );
+};
+
+module.exports.deleteRow = (rowId) => {
+    return db.query(
+        `
+        DELETE FROM repos WHERE id = $1
+    `,
+        [rowId]
     );
 };

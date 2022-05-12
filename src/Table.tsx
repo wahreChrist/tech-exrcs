@@ -20,8 +20,8 @@ export default function Table() {
         fetch(`/repos`)
             .then((res) => res.json())
             .then((data) => {
-                console.log("repos", data);
-                setRepos([data]);
+                // console.log("repos", data);
+                setRepos(data);
             })
             .catch((err) =>
                 console.log("error in retrieving repos for this user", err)
@@ -63,6 +63,23 @@ export default function Table() {
             }
         } catch (error) {
             console.log("error in adding repo", error);
+        }
+    };
+
+    const deleteRepo = async (
+        e: React.MouseEvent<HTMLButtonElement>,
+        id: number
+    ) => {
+        e.preventDefault();
+
+        try {
+            let resp = await fetch(`/delete-repo/${id}`, { method: "DELETE" });
+            let notification = await resp.json();
+            notification.success
+                ? setRepos(repos.filter((repo) => repo.id !== id))
+                : console.log("no repos with such id");
+        } catch (error) {
+            console.log("error in deleting row", error);
         }
     };
 
@@ -133,32 +150,50 @@ export default function Table() {
                                 <th className="border border-slate-600 p-2 bg-slate-200">
                                     Created
                                 </th>
+                                <th className="border border-slate-600 p-2 bg-slate-200">
+                                    Update/Delete
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {repos.length &&
                                 repos.map((row, index) => (
                                     <tr key={index}>
-                                        <td className="border border-slate-700 p-1.5">
+                                        <td className="border border-slate-700 p-1.5 text-sm">
                                             {row.owner}
                                         </td>
-                                        <td className="border border-slate-700 p-1.5">
+                                        <td className="border border-slate-700 p-1.5 text-sm">
                                             {row.proj_name}
                                         </td>
-                                        <td className="border border-slate-700 p-1.5">
+                                        <td className="border border-slate-700 p-1.5 text-sm">
                                             {row.url}
                                         </td>
-                                        <td className="border border-slate-700 p-1.5">
+                                        <td className="border border-slate-700 p-1.5 text-sm">
                                             {row.stars}
                                         </td>
-                                        <td className="border border-slate-700 p-1.5">
+                                        <td className="border border-slate-700 p-1.5 text-sm">
                                             {row.forks}
                                         </td>
-                                        <td className="border border-slate-700 p-1.5">
+                                        <td className="border border-slate-700 p-1.5 text-sm">
                                             {row.issues}
                                         </td>
-                                        <td className="border border-slate-700 p-1.5">
+                                        <td className="border border-slate-700 p-1.5 text-sm">
                                             {row.timestamp}
+                                        </td>
+                                        <td className="p-1.5 border border-slate-700">
+                                            <div className="flex">
+                                                <button className="flex justify-self-center mx-auto text-white bg-indigo-500 border-0 py-1.5 px-4 focus:outline-none hover:bg-indigo-600 rounded-l text-xs">
+                                                    update
+                                                </button>
+                                                <button
+                                                    onClick={(e) =>
+                                                        deleteRepo(e, row.id)
+                                                    }
+                                                    className="flex mx-auto text-white bg-red-500 border-0 py-1.5 px-4 focus:outline-none hover:bg-red-600 rounded-r text-xs"
+                                                >
+                                                    delete
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

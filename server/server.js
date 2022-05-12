@@ -107,10 +107,22 @@ app.post("/add-repo", async (req, res) => {
             issues,
             timestamp
         );
-        console.log("returned data from database", data.rows);
+        // console.log("returned data from database", data.rows);
         res.json(data.rows[0]);
     } catch (err) {
         console.log("error in adding data to the db", err);
+    }
+});
+
+app.delete(`/delete-repo/:id`, async (req, res) => {
+    // console.log("req.params:", req.params);
+    try {
+        // eslint-disable-next-line no-unused-vars
+        const data = await db.deleteRow(req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        console.log("error in deleting a row from db", error);
+        res.json({ success: false });
     }
 });
 
