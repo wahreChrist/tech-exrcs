@@ -126,6 +126,22 @@ app.delete(`/delete-repo/:id`, async (req, res) => {
     }
 });
 
+app.put(`/update-repo`, async (req, res) => {
+    // console.log("req.body:", req.body);
+    const { newOwner, newName, id } = req.body;
+    try {
+        if (newOwner !== "" && newName !== "") {
+            // eslint-disable-next-line no-unused-vars
+            const data = await db.updateRow(newOwner, newName, id);
+            // console.log(data.rows[0]);
+            res.json({ success: true });
+        }
+    } catch (error) {
+        console.log("error in updating a row", error);
+        res.json({ success: false });
+    }
+});
+
 app.get("*", function (req, res) {
     res.sendFile(path.join(__dirname, "..", "index.html"));
 });

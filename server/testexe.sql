@@ -20,5 +20,3 @@
 --      timestamp VARCHAR NOT NULL
 -- );
 
-
--- DELETE FROM repos WHERE id = 3;

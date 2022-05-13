@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Update from "./Update";
 
 interface Repo {
     id: number;
@@ -11,12 +12,19 @@ interface Repo {
     timestamp: string;
 }
 
-export default function Table() {
+export default function Table(): JSX.Element {
     const [repo, setRepo] = useState<string>("");
     const [apiError, setApiError] = useState<boolean>(false);
+    const [edit, setEdit] = useState<number>(0);
     const [repos, setRepos] = useState<Repo[]>([]);
+    const [data1, setData1] = useState<string>("");
+    const [data2, setData2] = useState<string>("");
 
     useEffect(() => {
+        fetchRepos();
+    }, []);
+
+    const fetchRepos = () => {
         fetch(`/repos`)
             .then((res) => res.json())
             .then((data) => {
@@ -26,7 +34,7 @@ export default function Table() {
             .catch((err) =>
                 console.log("error in retrieving repos for this user", err)
             );
-    }, []);
+    };
 
     const addRepo = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -80,6 +88,34 @@ export default function Table() {
                 : console.log("no repos with such id");
         } catch (error) {
             console.log("error in deleting row", error);
+        }
+    };
+
+    const toggleUpdate = (
+        e: React.MouseEvent<HTMLButtonElement>,
+        id: number
+    ) => {
+        e.preventDefault();
+        setEdit(id);
+    };
+
+    const updateRepo = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        const raw = await fetch(`/update-repo`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ newOwner: data1, newName: data2, id: edit }),
+        });
+        const resp = await raw.json();
+        // console.log("response from db:", resp);
+        if (resp.success) {
+            fetchRepos();
+            setEdit(0);
+        } else {
+            console.log("error in updating db");
+            setEdit(0);
         }
     };
 
@@ -160,10 +196,18 @@ export default function Table() {
                                 repos.map((row, index) => (
                                     <tr key={index}>
                                         <td className="border border-slate-700 p-1.5 text-sm">
-                                            {row.owner}
+                                            {edit === row.id ? (
+                                                <Update property={setData1} />
+                                            ) : (
+                                                row.owner
+                                            )}
                                         </td>
                                         <td className="border border-slate-700 p-1.5 text-sm">
-                                            {row.proj_name}
+                                            {edit === row.id ? (
+                                                <Update property={setData2} />
+                                            ) : (
+                                                row.proj_name
+                                            )}
                                         </td>
                                         <td className="border border-slate-700 p-1.5 text-sm">
                                             {row.url}
@@ -180,15 +224,32 @@ export default function Table() {
                                         <td className="border border-slate-700 p-1.5 text-sm">
                                             {row.timestamp}
                                         </td>
+
                                         <td className="p-1.5 border border-slate-700">
                                             <div className="flex">
-                                                <button className="flex justify-self-center mx-auto text-white bg-indigo-500 border-0 py-1.5 px-4 focus:outline-none hover:bg-indigo-600 rounded-l text-xs">
-                                                    update
+                                                <button
+                                                    onClick={
+                                                        edit === row.id
+                                                            ? updateRepo
+                                                            : (e) =>
+                                                                  toggleUpdate(
+                                                                      e,
+                                                                      row.id
+                                                                  )
+                                                    }
+                                                    className="flex justify-self-center mx-auto text-white bg-indigo-500 border-0 py-1.5 px-4 focus:outline-none hover:bg-indigo-600 rounded-l text-xs"
+                                                >
+                                                    {edit === row.id
+                                                        ? "submit"
+                                                        : "update"}
                                                 </button>
                                                 <button
-                                                    onClick={(e) =>
-                                                        deleteRepo(e, row.id)
-                                                    }
+                                                    onClick={(
+                                                        e: React.MouseEvent<
+                                                            HTMLButtonElement,
+                                                            MouseEvent
+                                                        >
+                                                    ) => deleteRepo(e, row.id)}
                                                     className="flex mx-auto text-white bg-red-500 border-0 py-1.5 px-4 focus:outline-none hover:bg-red-600 rounded-r text-xs"
                                                 >
                                                     delete

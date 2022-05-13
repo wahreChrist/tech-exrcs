@@ -62,3 +62,13 @@ module.exports.deleteRow = (rowId) => {
         [rowId]
     );
 };
+
+module.exports.updateRow = (newOwner, newName, id) => {
+    return db.query(
+        `
+        UPDATE repos SET owner = $1, proj_name = $2 WHERE id = $3
+        RETURNING owner, proj_name, id
+    `,
+        [newOwner, newName, id]
+    );
+};
